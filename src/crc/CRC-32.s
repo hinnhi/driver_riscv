@@ -1,5 +1,5 @@
-#  CRC-32
-#  Test vector: crc32("123456789", 9) == 0xCBF43926
+# CRC-32
+# Test vector: crc32("123456789", 9) == 0xCBF43926
 
 .data
 msg:    .asciz  "123456789"
@@ -16,8 +16,8 @@ main:
     li      a7, 10                  # exit
     ecall
 
-#  uint32_t crc32(uint8_t *data /*a0*/, uint32_t len /*a1*/)
-#  Register map:
+# uint32_t crc32(uint8_t *data /*a0*/, uint32_t len /*a1*/)
+# Register map:
 #    t0  = crc accumulator (starts 0xFFFFFFFF)
 #    t1  = data pointer
 #    t2  = remaining byte count
@@ -32,11 +32,11 @@ crc32:
     mv      t2, a1                  # t2 = length
 
     # Build polynomial in two safe steps to avoid assembler sign-extension bugs:
-    #   0xEDB88320 = (0xEDB88 << 12) | 0x320
-    #   lui loads bits[31:12]; but addi sign-extends, so if bit11 of imm=1
-    #   the assembler must subtract 1 from the upper immediate.
-    #   Writing it as lui+addi explicitly makes intent clear; RARS & CPUlator
-    #   both handle 'li' correctly here, but explicit form is portable.
+    #     0xEDB88320 = (0xEDB88 << 12) | 0x320
+    #     lui loads bits[31:12]; but addi sign-extends, so if bit11 of imm=1
+    #     the assembler must subtract 1 from the upper immediate.
+    #     Writing it as lui+addi explicitly makes intent clear; RARS & CPUlator
+    #     both handle 'li' correctly here, but explicit form is portable.
     lui     t3, 0xEDB88             # t3 = 0xEDB88000
     addi    t3, t3, 0x320           # t3 = 0xEDB88320  yes (bit11=0, no correction needed)
 
@@ -46,9 +46,9 @@ byte_loop:
     lbu     t4, 0(t1)               # load byte (zero-extended)
     xor     t0, t0, t4              # crc ^= byte
 
-    # ---- Bit-loop unrolled x2 (4 pairs = 8 bits) ----
-    # Each pair: process bit N then bit N+1 before looping.
-    # Saves 4 branch instructions per byte vs. fully counted loop.
+    # Bit-loop unrolled x2 (4 pairs = 8 bits)
+    #     Each pair: process bit N then bit N+1 before looping.
+    #     Saves 4 branch instructions per byte vs. fully counted loop.
 
     # bit 0
     andi    t6, t0, 1
